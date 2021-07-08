@@ -8,235 +8,111 @@ using TMPro;
 
 public class DialogueManager : MonoBehaviour
 {
-    // [Header("Dialogues")]
-    // [SerializeField] private DialoguesPerScene[] scenes;
+    [Header("Dialogues and prefabs")]
+    [SerializeField] private SceneDialogues _sceneDialogues;
+    [SerializeField] private Sprite _backgroundImage;
+    [SerializeField] private Dialogee[] _dialogees = new Dialogee[0];
+    [SerializeField] private Dialogue[] _dialogues;
 
-    // private ScenesManager scenesManager;
-    // public static DialogueManager Instance = null;
-    // private DialogueSoundManager soundMGMT;
+    [Header("Text colour")]
+    [SerializeField] private Color textColour;
+    
+    private DialogueSoundManager soundMGMT;
 
-    // private int dialogueCounter;
-    // private int sentenceCounter;
-    // private ScriptableDialogue currentDialogue;
-    // public string currentDialogueID;
-    // public bool canInteract = false;
-    // private bool hasStarted = false;
-    // public UnityEvent<string> DialogueStarted;
+    private int dialogueCounter;
+    private int sentenceCounter;
+    private Dialogue currentDialogue;
+    public string currentDialogueID;
 
-    // [Header("UI")]
-    // [SerializeField] private GameObject dialogHUD;
-    // [SerializeField] private TMP_Text title_Text;
-    // [SerializeField] private TMP_Text body_Text;
-    // [SerializeField] private TMP_Text button_Text;
-    // [SerializeField] private GameObject _wrapperImage;
-    // [SerializeField] private Image _speakerImage;
+    [Header("UI")]
+    [SerializeField] private GameObject dialogHUD;
+    [SerializeField] private TMP_Text title_Text;
+    [SerializeField] private TMP_Text body_Text;
+    [SerializeField] private GameObject _leftExpositor;
+    [SerializeField] private GameObject _middleExpositor;
+    [SerializeField] private GameObject _rightExpositor;
+    [SerializeField] private TMP_Text button_Text;
+    [SerializeField] private TMP_Text button2_Text;
+    [SerializeField] private TMP_Text button3_Text;
 
-    // [Header("Time")]
-    // [SerializeField] private float _timeBetweenletters;
+    private float _timeBetweenletters;
+    private CSVParser _parser = new CSVParser();
 
-    // [Header("Cats/Expositors")]
-    // [SerializeField] private Sprite[] _cats = new Sprite[0];
-    // private List<string> catNames = new List<string>  {"ricardo", "ricardos"};
+    void Start()
+    {
+        dialogHUD.SetActive(false);
+        soundMGMT = GetComponent<DialogueSoundManager>();
+        this._dialogues = _parser.Parse(_sceneDialogues);
+    }
 
-    // private List<string> normalStrings = new List<string>  {"good! let's spill some blood!", "excuse me", "#capitalism", "we can dash with left shift", "i bet there’s a lever somewhere that opens this door.", "look! a lever!", "perfect, a litter box!", "that milk looks like it could “heal” us in some way", "we’re free", "we’re so close to the surface I can feel it in our whiskers!", "freedom!", "*grumpy meow*"};
+    public void StartDialog()
+    {
+        dialogHUD.SetActive(true);
+    }
 
-    // private bool IsLastDialogue => currentDialogue?.Dialogues.Length - 1 == dialogueCounter;
-    // private bool IsLastSentence => currentDialogue?.Dialogues[dialogueCounter].dialogueBodySentences.Length - 1 == sentenceCounter;
+    public void EndDialog()
+    {
+        soundMGMT.StopPlay();
+        dialogueCounter = 0;
+        sentenceCounter = 0;
+        this.title_Text.text  = String.Empty;
+        this.body_Text.text   = String.Empty;
+        this.button_Text.text = String.Empty;
+        dialogHUD.SetActive(false);
+    }
 
-    // void Start()
-    // {
-    //     scenesManager = FindObjectOfType<ScenesManager>();
-    //     Instance = this;
-    //     dialogueCounter = 0;
-    //     sentenceCounter = 0;
-    //     canInteract = false;
-    //     currentDialogueID = "";
-    //     hasStarted = false;
-    //     dialogHUD.SetActive(false);
-    //     soundMGMT = GetComponent<DialogueSoundManager>();
-    //     _wrapperImage.SetActive(false);
+    public void ContinueDialogueEvent()
+    {
+        dialogueCounter++;
+        sentenceCounter = 0;
+    }
 
-    //     if (DialogueStarted == null) DialogueStarted = new UnityEvent<string>();
-    // } 
+    public void ContinueSentences()
+    {
+        sentenceCounter++;
+    }
 
-    // void OnDestroy()
-    // {
-    //     Instance = null;
-    // }
+    private void ShowDialogue(Dialogue dialogue)
+    {        
+        if(dialogue == null) return;
+        this.title_Text.text  = dialogue.expositorName + ": ";
+        this.title_Text.color = textColour;
+        this.body_Text.color  = textColour;
 
-    // public void StartDialogue()
-    // {
-    //     _wrapperImage.SetActive(false);
-    //     if (hasStarted)
-    //     {
-    //         ActionButton();
-    //         return;
-    //     }
+        this.GetSetImage(dialogue);
 
-    //     if (currentDialogueID.Equals(String.Empty) || !canInteract)
-    //     {
-    //         return;
-    //     }
-                
-    //     hasStarted = true;
-    //     dialogHUD.SetActive(true);
-    //     DialogueStarted.Invoke(currentDialogueID);
+        if (dialogue.dialogueBody.Length > 0)
+        {
+            StopAllCoroutines();
+            StartCoroutine(WriteText(dialogue.dialogueBody[this.sentenceCounter]));
 
-    //     DialoguesPerScene sceneDialogues = this.GetCurrentSceneDialogues();
-    //     if (sceneDialogues == null)
-    //     {
-    //         return;
-    //     }
+            // Do something with buttons
+        }
+    }
 
-    //     ScriptableDialogue dialog = GetCurrentDialogue(sceneDialogues.dialogues, this.currentDialogueID);
-    //     if (dialog == null)
-    //     {
-    //         return;
-    //     } 
+    IEnumerator WriteText(string textToWrite)
+    {
+        this.body_Text.text = "";
 
-    //     if (dialog.Dialogues.Length > 0)
-    //     {
-    //         currentDialogue = dialog;
-    //         ShowDialogue(currentDialogue.Dialogues[dialogueCounter]);
-    //     }
-    // }
+        foreach (var character in textToWrite.ToCharArray())
+        {
+            this.body_Text.text += character;
+            soundMGMT.Play();
 
-    // public void StopDialogue()
-    // {
-    //     soundMGMT.StopPlay();
-    //     dialogueCounter = 0;
-    //     sentenceCounter = 0;
-    //     hasStarted = false;
-    //     this.title_Text.text  = String.Empty;
-    //     this.body_Text.text   = String.Empty;
-    //     this.button_Text.text = String.Empty;
-    //     _wrapperImage.SetActive(false);
-    //     dialogHUD.SetActive(false);
-    // }
+            yield return new WaitForSeconds(_timeBetweenletters);
+        }
+        soundMGMT.StopPlay();
+    }
 
-    // public void ContinueDialogue()
-    // {
-    //     dialogueCounter++;
-    //     sentenceCounter = 0;
-    //     ShowDialogue(currentDialogue.Dialogues[dialogueCounter]);
-    // }
+    private void GetSetImage(Dialogue dialogue)
+    {
+        foreach (var dialogee in _dialogees)
+        {
+            if(dialogee.codename == dialogue.expositorName)
+            {
 
-    // public void ContinueSentences()
-    // {
-    //     sentenceCounter++;
-    //     ShowDialogue(currentDialogue?.Dialogues[dialogueCounter]);
-    // }
-
-    // private void ShowDialogue(Dialogue dialogue)
-    // {        
-    //     if(dialogue == null) return;
-    //     this.title_Text.text  = dialogue.expositorName + ": ";
-    //     this.title_Text.color = dialogue.textColour;
-
-    //     this.GetSetImage(dialogue);
-
-    //     if (dialogue.dialogueBodySentences.Length > 0)
-    //     {
-    //         this.body_Text.color = dialogue.textColour;
-    //         StopAllCoroutines();
-    //         StartCoroutine(WriteText(dialogue.dialogueBodySentences[this.sentenceCounter]));
-
-    //         this.button_Text.text = GetButtonText(dialogue.dialogueBodySentences.Length, sentenceCounter);
-    //     }
-    // }
-
-    // IEnumerator WriteText(string textToWrite)
-    // {
-    //     this.body_Text.text = "";
-    //     bool played         = false;
-    //     string textToEval   = textToWrite.ToLower().Replace("\n", "").Replace("\r", "");
-    //     bool containedIn    = normalStrings.Contains(textToEval);
-
-    //     foreach (var character in textToWrite.ToCharArray())
-    //     {
-    //         this.body_Text.text += character;
-    //         if(containedIn)
-    //         {
-    //              if (!played)
-    //              {
-    //                 soundMGMT.PlayNormal(normalStrings.IndexOf(textToEval));   
-    //              }
-    //             played = true;
-    //         } 
-    //         else
-    //         {
-    //             soundMGMT.Play();
-    //         }
-
-    //         yield return new WaitForSeconds(_timeBetweenletters);
-    //     }
-    //     if(!containedIn)
-    //     {
-    //         yield return new WaitForSeconds(_timeBetweenletters);
-    //         soundMGMT.StopPlay();
-    //     }
-    // }
-
-    // public void ActionButton()
-    // {
-    //     if (IsLastDialogue && IsLastSentence)
-    //     {
-    //         StopDialogue();
-    //         return;
-    //     } 
-    //     if ((IsLastDialogue && !IsLastSentence) || (!IsLastDialogue && !IsLastSentence))
-    //     {
-    //         ContinueSentences();
-    //         return;
-    //     }
-    //     if (!IsLastDialogue && IsLastSentence)
-    //     {
-    //         ContinueDialogue();
-    //         return;
-    //     }
-    // }
-
-    // public string GetButtonText(int sentencesLength, int index)
-    // {
-    //     if (sentencesLength <= 1 || (index >= sentencesLength - 1 &&  IsLastDialogue))
-    //     {
-    //         return Global.OK;
-    //     }
-    //     return Global.Continue;
-    // }
-
-    // private DialoguesPerScene GetCurrentSceneDialogues()
-    // {
-    //     foreach (var scene in scenes)
-    //     {
-    //         if (scenesManager.CurrentScene.Equals(scene.sceneName))
-    //         {
-    //             return scene;
-    //         }
-    //     }
-    //     return null;
-    // }
-
-    // private ScriptableDialogue GetCurrentDialogue(ScriptableDialogue[] sceneDialogues, string id)
-    // {
-    //     foreach (var dialogue in sceneDialogues)
-    //     {
-    //         if (dialogue.DialogueId.Equals(id))
-    //         {
-    //             return dialogue;
-    //         }
-    //     }
-    //     return null;
-    // }
-
-    // private void GetSetImage(Dialogue dialogue)
-    // {
-    //     if(catNames.Contains(dialogue.expositorName.ToLower()))
-    //     {
-    //         int catIndex = catNames.FindIndex(cat => cat == dialogue.expositorName.ToLower());
-    //         _wrapperImage.SetActive(true);
-    //         _speakerImage.sprite = _cats[catIndex];
-    //     }
-    // }
+            }
+        }
+    }
 
 }

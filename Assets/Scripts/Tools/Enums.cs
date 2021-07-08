@@ -10,3 +10,16 @@ public enum MixerEnum
   MusicMixer,
   FlangedMixer
 }
+
+public enum Language 
+{
+  English, 
+  Spanish
+}
+
+public enum DialogueePosition 
+{
+  Left, 
+  Middle,
+  Right
+}
