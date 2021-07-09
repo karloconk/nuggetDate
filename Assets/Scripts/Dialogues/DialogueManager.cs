@@ -35,19 +35,50 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private TMP_Text button2_Text;
     [SerializeField] private TMP_Text button3_Text;
 
+    [Header("Events")]
+    public UnityEvent OnPrepareForDialogue;
+    public UnityEvent<string> OnEndMonolog;
+    public UnityEvent OnSceneEnd;
+
     private float _timeBetweenletters;
     private CSVParser _parser = new CSVParser();
 
     void Start()
     {
+        StartUp();
+        InitStuff();
+        PrepareForDialogue();
+    }
+
+    public void StartUp()
+    {
         dialogHUD.SetActive(false);
         soundMGMT = GetComponent<DialogueSoundManager>();
         this._dialogues = _parser.Parse(_sceneDialogues);
+        //music
+        //lights
+        //theimage
     }
 
-    public void StartDialog()
+    public void InitStuff()
     {
-        dialogHUD.SetActive(true);
+        //here some bools should be considered
+    }
+
+    public void PrepareForDialogue()
+    {
+        OnPrepareForDialogue.Invoke();
+    }
+
+    public void EndMonolog()
+    {
+        OnEndMonolog.Invoke(currentDialogueID);
+    }
+
+    public void SceneEnd()
+    {
+        EndDialog();
+        OnSceneEnd.Invoke();
     }
 
     public void EndDialog()
