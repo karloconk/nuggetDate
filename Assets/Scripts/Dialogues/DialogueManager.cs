@@ -83,6 +83,8 @@ public class DialogueManager : MonoBehaviour
 
     public void EndDialog()
     {
+        // this is a test for github/jira
+        
         soundMGMT.StopPlay();
         dialogueCounter = 0;
         sentenceCounter = 0;
