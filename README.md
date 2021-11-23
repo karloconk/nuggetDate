@@ -1,9 +1,13 @@
-<!-- Created by Karlo -->
+# 🍗 NuggetDate
 
-# <center>NuggetDate</center>
+## 🔮 High Concept
 
-## Game information:
+* This is a Nugget Dating sim, its a side project and is still in development.
 
-* High concept: XXX
+## 💔 Known Issues
 
-* Have fun!
+* None
+
+## 🧐 Special Notices:
+
+* None.
