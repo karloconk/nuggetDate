@@ -3,14 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.Experimental.Rendering.Universal;
+
 
 public class DialogueInteractable : MonoBehaviour
 {
     [SerializeField] private string dialogueId; 
     Rigidbody2D _rb;
     [SerializeField] private bool isForced = false;
-    [SerializeField] private Light2D _lightSource;
+    [SerializeField] private UnityEngine.Rendering.Universal.Light2D _lightSource;
 
     private void Start() 
     {
